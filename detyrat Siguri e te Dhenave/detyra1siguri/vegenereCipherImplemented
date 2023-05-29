@@ -1,0 +1,56 @@
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.security.Key;
+
+public class AESEncryption {
+    private static final String AES_ALGORITHM = "AES";
+
+    public static void encryptFile(String secretKey, String inputFile, String outputFile) throws Exception {
+        byte[] fileContent = Files.readAllBytes(Paths.get(inputFile));
+        byte[] encryptedContent = encrypt(secretKey, fileContent);
+        Files.write(Paths.get(outputFile), encryptedContent, StandardOpenOption.CREATE);
+        System.out.println("File encrypted successfully.");
+    }
+
+    public static void decryptFile(String secretKey, String inputFile, String outputFile) throws Exception {
+        byte[] encryptedContent = Files.readAllBytes(Paths.get(inputFile));
+        byte[] decryptedContent = decrypt(secretKey, encryptedContent);
+        Files.write(Paths.get(outputFile), decryptedContent, StandardOpenOption.CREATE);
+        System.out.println("File decrypted successfully.");
+    }
+
+    private static byte[] encrypt(String secretKey, byte[] content) throws Exception {
+        Key key = generateKey(secretKey);
+        Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE, key);
+        return cipher.doFinal(content);
+    }
+
+    private static byte[] decrypt(String secretKey, byte[] encryptedContent) throws Exception {
+        Key key = generateKey(secretKey);
+        Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
+        cipher.init(Cipher.DECRYPT_MODE, key);
+        return cipher.doFinal(encryptedContent);
+    }
+
+    private static Key generateKey(String secretKey) {
+        return new SecretKeySpec(secretKey.getBytes(), AES_ALGORITHM);
+    }
+
+    public static void main(String[] args) {
+        String secretKey = "thisisaverysecretkey";
+        String inputFile = "input.txt";
+        String encryptedFile = "encrypted.txt";
+        String decryptedFile = "decrypted.txt";
+
+        try {
+            encryptFile(secretKey, inputFile, encryptedFile);
+            decryptFile(secretKey, encryptedFile, decryptedFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
